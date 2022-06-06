@@ -17,7 +17,7 @@ func (d *DBManager) InsertBlock(b *cosmos_api.BlockObject) error {
 	sqlStatement := `
 INSERT INTO blocks (block_number, block_hash, block_proposer_address, created_at)
 VALUES ($1, $2, $3, $4)`
-	_, err := d.db.Exec(sqlStatement, b.Block.Header.Height, b.BlockId.Hash, b.Block.ProposerAddress, b.Block.Header.Time)
+	_, err := d.db.Exec(sqlStatement, b.Block.Header.Height, b.BlockId.Hash, b.Block.Header.ProposerAddress, b.Block.Header.Time)
 
 	return err
 }

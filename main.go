@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
+	"sync"
 )
 
 func connectionInfo() string {
@@ -40,7 +41,7 @@ func main() {
 
 	c := cosmos_api.NewClient()
 	const startValue = 9989379
-	for i := startValue; i < startValue+10; i++ {
+	for i := startValue; i < startValue+20; i++ {
 		ProcessBlock(c, i)
 	}
 }
@@ -57,22 +58,28 @@ func ProcessBlock(c *cosmos_api.Client, blockNumber int) {
 	}
 
 	manager.InsertBlock(block)
+	var wg sync.WaitGroup
 
 	for _, tx := range txs {
-		transaction, err := c.GetTx(ctx, app.CalculateTransactionID(tx))
-		if err != nil {
-			continue
-		}
-
-		for _, msg := range transaction.TxDetails.Value.Msg {
-			fmt.Printf("------------- Start transaction -------------")
-			manager.InsertTransaction(transaction, blockNumber)
-			fmt.Printf("%s%s", msg.Type, transaction.Hash)
-			if msg.Type == "cosmos-sdk/MsgSend" {
-				manager.InsertTransfer(transaction)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			transaction, err := c.GetTx(ctx, app.CalculateTransactionID(tx))
+			if err != nil {
+				return
 			}
-		}
-		fmt.Printf("\n")
+
+			for _, msg := range transaction.TxDetails.Value.Msg {
+				fmt.Printf("------------- Start transaction -------------")
+				manager.InsertTransaction(transaction, blockNumber)
+				fmt.Printf("%s%s", msg.Type, transaction.Hash)
+				if msg.Type == "cosmos-sdk/MsgSend" {
+					manager.InsertTransfer(transaction)
+				}
+			}
+			fmt.Printf("\n")
+		}()
 	}
+	wg.Wait()
 	fmt.Printf("------------- Finish block -------------\n")
 }

@@ -90,6 +90,7 @@ CREATE TABLE blocks (
 
 func createView(db *sql.DB) {
 	sqlStatement := `
+CREATE VIEW vwTransferTransaction AS
  SELECT b.block_number,
     t.transaction_hash,
     tf.amount,

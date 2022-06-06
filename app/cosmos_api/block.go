@@ -22,14 +22,14 @@ type Data struct {
 }
 
 type Header struct {
-	Height string    `json:"height"`
-	Time   time.Time `json:"time"`
+	Height          string    `json:"height"`
+	Time            time.Time `json:"time"`
+	ProposerAddress string    `json:"proposer_address"`
 }
 
 type Block struct {
-	Data            Data   `json:"data"`
-	Header          Header `json:"header"`
-	ProposerAddress string `json:"proposer_address"`
+	Data   Data   `json:"data"`
+	Header Header `json:"header"`
 }
 
 type BlockObject struct {
